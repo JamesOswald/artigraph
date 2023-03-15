@@ -6,7 +6,7 @@ from typing import Annotated, cast
 import pytest
 from box import BoxError
 
-from arti import Artifact, CompositeKey, Fingerprint, Graph, View, producer
+from arti import Artifact, CompositeKey, Fingerprint, View, producer
 from arti.backends.memory import MemoryBackend
 from arti.executors.local import LocalExecutor
 from arti.formats.json import JSON
@@ -14,24 +14,13 @@ from arti.internal.utils import frozendict
 from arti.storage.literal import StringLiteral
 from arti.storage.local import LocalFile, LocalFilePartition
 from arti.types import Int64
-from tests.arti.dummies import A1, A2, A3, A4, P1, P2
+from tests.arti.dummies import A1, A2, A3, A4, P1, Graph
 from tests.arti.dummies import Num as _Num
 from tests.arti.dummies import div
 
 
 class Num(_Num):
     storage: LocalFile
-
-
-@pytest.fixture
-def graph() -> Graph:
-    # NOTE: .out() supports strict Artifact subclass mypy typing with the mypy_plugin, but Producers
-    # also support simple iteration (eg: `a, b = MyProducer(...)`).
-    with Graph(name="test") as g:
-        g.artifacts.a = A1()
-        g.artifacts.b = P1(a1=g.artifacts.a).out()
-        g.artifacts.c.a, g.artifacts.c.b = P2(a2=g.artifacts.b).out()
-    return g
 
 
 def test_Graph(graph: Graph) -> None:

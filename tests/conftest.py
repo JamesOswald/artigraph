@@ -6,6 +6,8 @@ import gcp_storage_emulator.server
 import gcsfs
 import pytest
 
+from tests.arti.dummies import graph
+
 
 # For now, run a single emulator per session. Tests should use separate buckets for isolation.
 @pytest.fixture(scope="session")

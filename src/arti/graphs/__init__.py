@@ -198,10 +198,11 @@ class Graph(Model):
         snapshot = self.copy(update={"snapshot_id": snapshot_id})
         assert snapshot.snapshot_id is not None
         # Write the discovered partitions (if not already known) and link to this new snapshot.
-        for key, partitions in known_artifact_partitions.items():
-            snapshot.backend.write_artifact_and_graph_partitions(
-                snapshot.artifacts[key], partitions, self.name, snapshot.snapshot_id, key
-            )
+        with snapshot.backend.connect() as backend:
+            for key, partitions in known_artifact_partitions.items():
+                backend.write_artifact_and_graph_partitions(
+                    snapshot.artifacts[key], partitions, self.name, snapshot.snapshot_id, key
+                )
         return snapshot
 
     def get_snapshot_id(self) -> Fingerprint:

@@ -3,12 +3,15 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Annotated, Any
 
+from pytest import fixture
+
 from arti import (
     Annotation,
     Artifact,
     CompositeKeyTypes,
     Fingerprint,
     Format,
+    Graph,
     InputFingerprints,
     Producer,
     Statistic,
@@ -141,3 +144,14 @@ class P3(Producer):
     @staticmethod
     def build(a1: dict, a2: dict) -> tuple[Annotated[dict, A3], Annotated[dict, A4]]:  # type: ignore[type-arg]
         return {}, {}
+
+
+@fixture
+def graph() -> Graph:
+    # NOTE: .out() supports strict Artifact subclass mypy typing with the mypy_plugin, but Producers
+    # also support simple iteration (eg: `a, b = MyProducer(...)`).
+    with Graph(name="test") as g:
+        g.artifacts.a = A1()
+        g.artifacts.b = P1(a1=g.artifacts.a).out()
+        g.artifacts.c.a, g.artifacts.c.b = P2(a2=g.artifacts.b).out()
+    return g
