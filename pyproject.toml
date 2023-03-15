@@ -62,6 +62,7 @@ python = "^3.9"
 gcsfs = {version = ">=2022.2.0", optional = true}
 google-cloud-bigquery = {version = "^3.5.0", optional = true}
 multimethod = ">=1.6"
+neomodel = {version = "*", optional = true}
 numpy = {version = ">=1.23.1", optional = true}
 pandas = {version = ">=1.4.3", optional = true}
 parse = ">=1.19.0"
@@ -102,6 +103,7 @@ aiohttp = {version = ">=3.8.3", optional = true}
 all = [
     "gcsfs",
     "google-cloud-bigquery",
+    "neomodel",
     "numpy",
     "pandas",
     "pyarrow",
