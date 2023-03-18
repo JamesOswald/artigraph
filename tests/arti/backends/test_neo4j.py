@@ -2,7 +2,6 @@ from pytest import fixture
 
 from arti import Graph, producer
 from arti.backends.neo4j import Neo4jBackend
-from tests.arti.dummies import div
 
 
 @producer()
@@ -13,7 +12,7 @@ def div(a: int, b: int) -> int:
 @fixture()
 def neo4j_backend() -> Neo4jBackend:
     return Neo4jBackend(
-        host="localhost",
+        host="127.0.0.1",
         port=7687,
         username="neo4j",
         password="artigraph",
@@ -29,6 +28,16 @@ def graph(neo4j_backend: Neo4jBackend) -> Graph:
         g.artifacts.namespace.z = 15
         g.artifacts.c = div(a=g.artifacts.a, b=g.artifacts.b)
     return g
+
+
+def test_connect(neo4j_backend: Neo4jBackend):
+    with neo4j_backend.connect() as connection:
+        connection.run_cypher("MATCH (n) RETURN n")
+
+
+def test_write_model(neo4j_backend: Neo4jBackend, graph):
+    with neo4j_backend.connect() as connection:
+        connection.write_model(graph.artifacts.a)
 
 
 def test_write_snapshot(graph: Graph):

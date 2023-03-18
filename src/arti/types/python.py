@@ -127,7 +127,7 @@ class PyLiteral(TypeAdapter):
         if is_union(origin):
             assert not is_optional_hint(type_)  # Should be handled by PyOptional
             # We only support Enums currently, so all subtypes must be Literal
-            if non_literals := [sub for sub in items if not get_origin(sub) is Literal]:
+            if non_literals := [sub for sub in items if get_origin(sub) is not Literal]:
                 raise NotImplementedError(
                     f"Only Union[Literal[...], ...] (enums) are currently supported, got invalid subtypes: {non_literals}"
                 )
