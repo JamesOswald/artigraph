@@ -233,9 +233,7 @@ class Graph(Model):
             else:
                 snapshot = snapshot or self.snapshot()
                 with self.backend.connect() as conn:
-                    storage_partitions = conn.read_graph_partitions(
-                        snapshot.name, snapshot.id, key, artifact
-                    )
+                    storage_partitions = conn.read_snapshot_partitions(snapshot, key, artifact)
         return io.read(
             type_=artifact.type,
             format=artifact.format,
@@ -282,9 +280,7 @@ class Graph(Model):
             # Skip linking this partition to the snapshot if it affects raw Artifacts (which would
             # trigger an id change).
             if snapshot is not None and artifact.producer_output is not None:
-                conn.write_graph_partitions(
-                    snapshot.name, snapshot.id, key, artifact, (storage_partition,)
-                )
+                conn.write_snapshot_partitions(snapshot, key, artifact, (storage_partition,))
         return cast(StoragePartition, storage_partition)
 
 
@@ -353,7 +349,7 @@ class GraphSnapshot(Model):
         with snapshot.backend.connect() as conn:
             for key, partitions in known_artifact_partitions.items():
                 conn.write_artifact_and_graph_partitions(
-                    snapshot.artifacts[key], partitions, snapshot.name, snapshot.id, key
+                    snapshot, snapshot.artifacts[key], partitions, key
                 )
         return snapshot
 

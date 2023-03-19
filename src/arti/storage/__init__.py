@@ -1,3 +1,4 @@
+from __future__ import annotations
 __path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
 import abc
@@ -36,6 +37,7 @@ class StoragePartition(_StorageMixin, Model):
     type: Type = Field(repr=False)
     format: Format = Field(repr=False)
     keys: CompositeKey = CompositeKey()
+    storage: Storage = Field(repr=False)
     input_fingerprint: Fingerprint = Fingerprint.empty()
     content_fingerprint: Fingerprint = Fingerprint.empty()
 
@@ -47,8 +49,8 @@ class StoragePartition(_StorageMixin, Model):
         return keys
 
     def with_content_fingerprint(
-        self: "_StoragePartition", keep_existing: bool = True
-    ) -> "_StoragePartition":
+        self: _StoragePartition, keep_existing: bool = True
+    ) -> _StoragePartition:
         if keep_existing and not self.content_fingerprint.is_empty:
             return self
         return self.copy(update={"content_fingerprint": self.compute_content_fingerprint()})
@@ -132,7 +134,7 @@ class Storage(_StorageMixin, Model, Generic[_StoragePartition]):
         )
 
     @classmethod
-    def get_default(cls) -> "AnyStorage":
+    def get_default(cls) -> AnyStorage:
         from arti.storage.literal import StringLiteral
 
         return StringLiteral()  # TODO: Support some sort of configurable defaults.
@@ -168,7 +170,7 @@ class Storage(_StorageMixin, Model, Generic[_StoragePartition]):
             if name in self.storage_partition_type.__fields__
         }
         partition = self.storage_partition_type(
-            input_fingerprint=input_fingerprint, keys=keys, **field_values
+            input_fingerprint=input_fingerprint, keys=keys, storage=self, **field_values
         )
         if with_content_fingerprint:
             partition = partition.with_content_fingerprint()
@@ -192,12 +194,12 @@ class Storage(_StorageMixin, Model, Generic[_StoragePartition]):
         return partial_format(spec, **placeholder_values)
 
     def resolve_templates(
-        self: "_Storage",
+        self: _Storage,
         graph_name: Optional[str] = None,
         input_fingerprint: Optional[Fingerprint] = None,
         names: Optional[tuple[str, ...]] = None,
         path_tags: Optional[frozendict[str, str]] = None,
-    ) -> "_Storage":
+    ) -> _Storage:
         values = {}
         if graph_name is not None:
             values["graph_name"] = graph_name

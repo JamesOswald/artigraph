@@ -72,11 +72,15 @@ def _check_types(value: Any, type_: type) -> Any:  # noqa: C901
         if set(args) == {Any}:
             return _check_types(value, origin)
         raise NotImplementedError(f"Missing handler for {type_} with {value}!")
-    # Models are immutable, so we convert all Mappings to frozendicts.
+    # Models are immutable, so we convert Mappings->frozendicts, Iterables->tuples
     if isinstance(value, Mapping) and not isinstance(value, frozendict):
         value = frozendict(value)
+    elif isinstance(value, list):
+        value = tuple(value)
     if lenient_issubclass(type_, Mapping):
         type_ = frozendict
+    elif lenient_issubclass(type_, list):
+        type_ = tuple
     if not lenient_issubclass(type(value), type_):
         raise mismatch_error
     return value
@@ -212,6 +216,7 @@ class Model(BaseModel):
         json_repr = self.__config__.json_dumps(
             data,
             default=partial(self._fingerprint_json_encoder, encoder=self.__json_encoder__),
+            sort_keys=True,
         )
         return Fingerprint.from_string(f"{self._class_key_}:{json_repr}")
 

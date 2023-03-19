@@ -1,15 +1,21 @@
+from __future__ import annotations
+
 __path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
 from abc import abstractmethod
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from arti.artifacts import Artifact
 from arti.fingerprints import Fingerprint
 from arti.internal.models import Model
 from arti.partitions import InputFingerprints
 from arti.storage import StoragePartitions
+
+if TYPE_CHECKING:
+    from arti.graphs import Graph, GraphSnapshot
+
 
 # TODO: Consider adding CRUD methods for "everything"?
 #
@@ -49,17 +55,16 @@ class Connection:
     # Artifact partitions for a specific GraphSnapshot
 
     @abstractmethod
-    def read_graph_partitions(
-        self, graph_name: str, graph_snapshot_id: Fingerprint, artifact_key: str, artifact: Artifact
+    def read_snapshot_partitions(
+        self, snapshot: GraphSnapshot, artifact_key: str, artifact: Artifact
     ) -> StoragePartitions:
         """Read the known Partitions for the named Artifact in a specific Graph snapshot."""
         raise NotImplementedError()
 
     @abstractmethod
-    def write_graph_partitions(
+    def write_snapshot_partitions(
         self,
-        graph_name: str,
-        graph_snapshot_id: Fingerprint,
+        snapshot: GraphSnapshot,
         artifact_key: str,
         artifact: Artifact,
         partitions: StoragePartitions,
@@ -69,16 +74,13 @@ class Connection:
 
     def write_artifact_and_graph_partitions(
         self,
+        snapshot: GraphSnapshot,
         artifact: Artifact,
         partitions: StoragePartitions,
-        graph_name: str,
-        graph_snapshot_id: Fingerprint,
         artifact_key: str,
     ) -> None:
         self.write_artifact_partitions(artifact, partitions)
-        self.write_graph_partitions(
-            graph_name, graph_snapshot_id, artifact_key, artifact, partitions
-        )
+        self.write_snapshot_partitions(snapshot, artifact_key, artifact, partitions)
 
     # GraphSnapshot Tagging
 

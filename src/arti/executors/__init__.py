@@ -26,8 +26,8 @@ class Executor(Model):
     ) -> InputPartitions:
         return InputPartitions(
             {
-                name: connection.read_graph_partitions(
-                    snapshot.name, snapshot.id, snapshot.graph.artifact_to_key[artifact], artifact
+                name: connection.read_snapshot_partitions(
+                    snapshot, snapshot.graph.artifact_to_key[artifact], artifact
                 )
                 for name, artifact in producer.inputs.items()
             }
@@ -51,9 +51,8 @@ class Executor(Model):
             for output in snapshot.graph.producer_outputs[producer]
         }
         for artifact, partitions in existing_output_partitions.items():
-            connection.write_graph_partitions(
-                snapshot.name,
-                snapshot.id,
+            connection.write_snapshot_partitions(
+                snapshot,
                 snapshot.graph.artifact_to_key[artifact],
                 artifact,
                 partitions,
